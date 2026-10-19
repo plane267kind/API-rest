@@ -10,8 +10,13 @@ let proximoId = 1;
 
 // 1. CREATE (Criar tarefa) - POST /tarefas
 app.post('/tarefas', (req, res) => {
-    const { titulo, descricao } = req.body;
+        try {
+        const { titulo, descricao } = req.body;
 
+         if (!titulo || titulo.trim() === '') {
+            return res.status(400).json({ erro: 'O campo título é obrigatório.' });
+        }
+        
     const novaTarefa = {
         id: proximoId++,
         titulo: titulo || 'Sem título',
@@ -20,15 +25,23 @@ app.post('/tarefas', (req, res) => {
 
     tarefas.push(novaTarefa);
     return res.status(201).json(novaTarefa);
+} catch (error) {
+    return res.status(500).json({ erro: 'Ocorreu um erro interno no servidor.' });
+}
 });
 
 // 2. READ (Listar tarefas) - GET /tarefas
 app.get('/tarefas', (req, res) => {
-    return res.json(tarefas);
+     try {
+        return res.json(tarefas);
+    } catch (error) {
+        return res.status(500).json({ erro: 'Ocorreu um erro interno no servidor.' });
+    }
 });
 
 // 3. UPDATE (Editar tarefa) - PUT /tarefas/:id
 app.put('/tarefas/:id', (req, res) => {
+    try {
     const { id } = req.params;
     const { titulo, descricao } = req.body;
 
@@ -42,10 +55,14 @@ app.put('/tarefas/:id', (req, res) => {
     if (descricao !== undefined) tarefa.descricao = descricao;
 
     return res.json(tarefa);
+        } catch (error) {
+        return res.status(500).json({ erro: 'Ocorreu um erro interno no servidor.' });
+    }
 });
 
 // 4. DELETE (Apagar tarefa) - DELETE /tarefas/:id
 app.delete('/tarefas/:id', (req, res) => {
+     try {
     const { id } = req.params;
     const index = tarefas.findIndex(t => t.id === Number(id));
 
@@ -55,6 +72,9 @@ app.delete('/tarefas/:id', (req, res) => {
 
     tarefas.splice(index, 1);
     return res.status(204).send(); // Sucesso sem conteúdo de retorno
+    } catch (error) {
+        return res.status(500).json({ erro: 'Ocorreu um erro interno no servidor.' });
+    }
 });
 
 app.listen(3000, () => {
